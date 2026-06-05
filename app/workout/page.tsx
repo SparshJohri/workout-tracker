@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 
 type DefaultExercise = {
   id: string;
@@ -306,11 +307,29 @@ export default function WorkoutPage() {
   return (
     <main className="min-h-screen bg-slate-950 text-white px-6 py-8">
       <div className="mx-auto max-w-5xl">
-        <header className="mb-10">
-          <h1 className="text-4xl font-bold">New Workout</h1>
-          <p className="text-slate-400 mt-2">
-            Record the details of your workout.
-          </p>
+        <header className="mb-10 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+          <div>
+            <h1 className="text-4xl font-bold">New Workout</h1>
+            <p className="text-slate-400 mt-2">
+              Record the details of your workout.
+            </p>
+          </div>
+
+          <nav className="flex gap-3 text-sm font-semibold">
+            <Link
+              href="/workout"
+              className="rounded-lg bg-blue-600 hover:bg-blue-500 px-4 py-2"
+            >
+              Current Workout
+            </Link>
+
+            <Link
+              href="/history"
+              className="rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 px-4 py-2"
+            >
+              History
+            </Link>
+          </nav>
         </header>
 
         <section className="rounded-2xl bg-slate-900 border border-slate-800 p-6 mb-8">

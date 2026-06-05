@@ -70,7 +70,7 @@ export async function POST(request: Request) {
   }
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
     const username = await getUsernameFromRequestCookie();
 
@@ -81,10 +81,37 @@ export async function GET() {
       );
     }
 
+    const { searchParams } = new URL(request.url);
+    const start = searchParams.get("start");
+    const end = searchParams.get("end");
+    const category = searchParams.get("category");
+
     await dbConnect();
 
-    const workouts = await Workout.find({ userId: username })
-      .sort({ createdAt: -1 })
+    const query: {
+      userId: string;
+      date?: {
+        $gte?: string;
+        $lte?: string;
+      };
+      category?: string;
+    } = {
+      userId: username,
+    };
+
+    if (start && end) {
+      query.date = {
+        $gte: start,
+        $lte: end,
+      };
+    }
+
+    if (category && category.trim() !== "") {
+      query.category = category.trim();
+    }
+
+    const workouts = await Workout.find(query)
+      .sort({ date: -1, time: -1 })
       .lean();
 
     return NextResponse.json({ workouts }, { status: 200 });
