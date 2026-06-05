@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 type WorkoutSet = {
   id: number;
@@ -33,12 +34,15 @@ type Workout = {
 };
 
 export default function HistoryPage() {
+  const router = useRouter();
+
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [category, setCategory] = useState("N/A");
   const [workouts, setWorkouts] = useState<Workout[]>([]);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showLogoutPopup, setShowLogoutPopup] = useState(false);
 
   async function handleSubmit() {
     setMessage("");
@@ -89,6 +93,33 @@ export default function HistoryPage() {
     }
   }
 
+  function handleLogoutClick() {
+    setShowLogoutPopup(true);
+  }
+
+  function handleCancelLogout() {
+    setShowLogoutPopup(false);
+  }
+
+  async function handleConfirmLogout() {
+    try {
+      const response = await fetch("/api/auth/logout", {
+        method: "POST",
+      });
+
+      if (!response.ok) {
+        alert("failed to log out");
+        return;
+      }
+
+      setShowLogoutPopup(false);
+      router.push("/");
+    } catch (error) {
+      console.error("Logout error:", error);
+      alert("failed to log out");
+    }
+  }
+
   return (
     <main className="min-h-screen bg-slate-950 text-white px-6 py-8">
       <div className="mx-auto max-w-6xl">
@@ -100,7 +131,7 @@ export default function HistoryPage() {
             </p>
           </div>
 
-          <nav className="flex gap-3 text-sm font-semibold">
+          <nav className="flex flex-wrap gap-3 text-sm font-semibold">
             <Link
               href="/workout"
               className="rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 px-4 py-2"
@@ -114,6 +145,14 @@ export default function HistoryPage() {
             >
               History
             </Link>
+
+            <button
+              type="button"
+              onClick={handleLogoutClick}
+              className="rounded-lg bg-red-600 hover:bg-red-500 px-4 py-2"
+            >
+              Log Out
+            </button>
           </nav>
         </header>
 
@@ -274,6 +313,36 @@ export default function HistoryPage() {
           ))}
         </section>
       </div>
+
+      {showLogoutPopup && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center px-4">
+          <div className="w-full max-w-md rounded-2xl bg-slate-900 border border-slate-700 p-6 shadow-xl">
+            <h2 className="text-2xl font-bold mb-3">Log Out?</h2>
+
+            <p className="text-slate-400 mb-6">
+              Are you sure you want to log out?
+            </p>
+
+            <div className="flex gap-3 justify-end">
+              <button
+                type="button"
+                onClick={handleCancelLogout}
+                className="rounded-lg bg-slate-700 hover:bg-slate-600 px-5 py-3 font-semibold"
+              >
+                Cancel
+              </button>
+
+              <button
+                type="button"
+                onClick={handleConfirmLogout}
+                className="rounded-lg bg-red-600 hover:bg-red-500 px-5 py-3 font-semibold"
+              >
+                Confirm
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

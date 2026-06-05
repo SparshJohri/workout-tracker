@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 type DefaultExercise = {
   id: string;
@@ -50,6 +51,8 @@ function generateId() {
 }
 
 export default function WorkoutPage() {
+  const router = useRouter();
+
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [location, setLocation] = useState("");
@@ -58,6 +61,7 @@ export default function WorkoutPage() {
 
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [showConfirmPopup, setShowConfirmPopup] = useState(false);
+  const [showLogoutPopup, setShowLogoutPopup] = useState(false);
 
   function addExercise() {
     const newExercise: Exercise = {
@@ -304,6 +308,33 @@ export default function WorkoutPage() {
     setShowConfirmPopup(false);
   }
 
+  function handleLogoutClick() {
+    setShowLogoutPopup(true);
+  }
+
+  function handleCancelLogout() {
+    setShowLogoutPopup(false);
+  }
+
+  async function handleConfirmLogout() {
+    try {
+      const response = await fetch("/api/auth/logout", {
+        method: "POST",
+      });
+
+      if (!response.ok) {
+        alert("failed to log out");
+        return;
+      }
+
+      setShowLogoutPopup(false);
+      router.push("/");
+    } catch (error) {
+      console.error("Logout error:", error);
+      alert("failed to log out");
+    }
+  }
+
   return (
     <main className="min-h-screen bg-slate-950 text-white px-6 py-8">
       <div className="mx-auto max-w-5xl">
@@ -315,7 +346,7 @@ export default function WorkoutPage() {
             </p>
           </div>
 
-          <nav className="flex gap-3 text-sm font-semibold">
+          <nav className="flex flex-wrap gap-3 text-sm font-semibold">
             <Link
               href="/workout"
               className="rounded-lg bg-blue-600 hover:bg-blue-500 px-4 py-2"
@@ -329,6 +360,14 @@ export default function WorkoutPage() {
             >
               History
             </Link>
+
+            <button
+              type="button"
+              onClick={handleLogoutClick}
+              className="rounded-lg bg-red-600 hover:bg-red-500 px-4 py-2"
+            >
+              Log Out
+            </button>
           </nav>
         </header>
 
@@ -635,6 +674,36 @@ export default function WorkoutPage() {
                 type="button"
                 onClick={handleConfirmSubmit}
                 className="rounded-lg bg-green-600 hover:bg-green-500 px-5 py-3 font-semibold"
+              >
+                Confirm
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showLogoutPopup && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center px-4">
+          <div className="w-full max-w-md rounded-2xl bg-slate-900 border border-slate-700 p-6 shadow-xl">
+            <h2 className="text-2xl font-bold mb-3">Log Out?</h2>
+
+            <p className="text-slate-400 mb-6">
+              Are you sure you want to log out?
+            </p>
+
+            <div className="flex gap-3 justify-end">
+              <button
+                type="button"
+                onClick={handleCancelLogout}
+                className="rounded-lg bg-slate-700 hover:bg-slate-600 px-5 py-3 font-semibold"
+              >
+                Cancel
+              </button>
+
+              <button
+                type="button"
+                onClick={handleConfirmLogout}
+                className="rounded-lg bg-red-600 hover:bg-red-500 px-5 py-3 font-semibold"
               >
                 Confirm
               </button>
